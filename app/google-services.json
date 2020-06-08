@@ -1,0 +1,85 @@
+{
+  "project_info": {
+    "project_number": "596697223228",
+    "firebase_url": "https://control-de-tiempo-latinus.firebaseio.com",
+    "project_id": "control-de-tiempo-latinus",
+    "storage_bucket": "control-de-tiempo-latinus.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:596697223228:android:aa8b300d8f6b8fc14b3339",
+        "android_client_info": {
+          "package_name": "com.example.controldetiempo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "596697223228-p2931jaep4c0rql3tb4eiccoop9r5pk1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.controldetiempo",
+            "certificate_hash": "039e505f350bf5f69a7cd5306e65d6ceefb95b3d"
+          }
+        },
+        {
+          "client_id": "596697223228-nqiq5vbvft33mvbumf2kvv20f6pj4k57.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMZ8AWXIQAVf4hKwZbkmg0m1dmceYV1Iw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "596697223228-nqiq5vbvft33mvbumf2kvv20f6pj4k57.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:596697223228:android:53e6477b3b0e29754b3339",
+        "android_client_info": {
+          "package_name": "com.example.controldetiemposervidor"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "596697223228-0iijqaplp7a8o45fc63usqptddv0iq3s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.controldetiemposervidor",
+            "certificate_hash": "039e505f350bf5f69a7cd5306e65d6ceefb95b3d"
+          }
+        },
+        {
+          "client_id": "596697223228-nqiq5vbvft33mvbumf2kvv20f6pj4k57.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMZ8AWXIQAVf4hKwZbkmg0m1dmceYV1Iw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "596697223228-nqiq5vbvft33mvbumf2kvv20f6pj4k57.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
