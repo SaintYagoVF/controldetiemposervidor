@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -17,6 +18,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -34,6 +43,9 @@ import com.journeyapps.barcodescanner.CaptureActivity;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 import com.journeyapps.barcodescanner.DefaultDecoderFactory;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
+import static com.android.volley.VolleyLog.TAG;
 
 public class MainActivity extends Activity {
 
@@ -58,6 +72,7 @@ public class MainActivity extends Activity {
     private static final String KEY_OTP="otp";
     private static final String KEY_LOGIN="login";
     private static final String KEY_NOMBRE="nombre";
+    private static final String KEY_TOKEN="token";
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private BarcodeCallback callback = new BarcodeCallback() {
@@ -201,7 +216,7 @@ public class MainActivity extends Activity {
                             txtTituloNombre.setText("BIENVENIDO/A ¡"+nombre_firebase+"!");
                             txtTituloContenido.setText("Por favor, ingresa el siguiente código en tu App: "+randomFinal);
 
-
+                            obtenerToken(cedula);
 
                             final Map<String,Object> usuario=new HashMap<>();
 
@@ -280,6 +295,129 @@ public class MainActivity extends Activity {
                         Toast.makeText(MainActivity.this,"Error: Verifique su conexión a Internet",Toast.LENGTH_LONG).show();
                         Log.d(TAG,e.toString());
                        // hideDialog();
+                    }
+                });
+
+    }
+
+    private void enviarPush(String token){
+
+        String url = "https://fcm.googleapis.com/fcm/send";
+
+
+
+
+        RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
+
+
+        Map<String, Object> notificacion= new HashMap<String, Object>();
+        notificacion.put("body","Estimado/a, haga click en la notificación para confirmar su asistencia en la plataforma");
+        notificacion.put("title","Control de Asistencia");
+        notificacion.put("content_available",true);
+        notificacion.put("priority","high");
+        notificacion.put("click_action","OPEN_ACTIVITY_1");
+        notificacion.put("image","https://pbs.twimg.com/profile_images/758354431280898048/GSut3u_I_400x400.jpg");
+        notificacion.put("click_action","OPEN_ACTIVITY_1");
+
+        Map<String, Object> data= new HashMap<String, Object>();
+        data.put("body","Estimado/a, haga click en la notificación para confirmar su asistencia en la plataforma");
+        data.put("title","Control de Asistencia");
+        data.put("content_available",true);
+        data.put("priority","high");
+
+        Map<String, Object> postParam= new HashMap<String, Object>();
+
+        postParam.put("to",token);
+        postParam.put("notification",notificacion);
+        postParam.put("data",data);
+
+
+
+
+        final JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
+                url, new JSONObject(postParam),
+                new Response.Listener<JSONObject>() {
+
+
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+
+
+                        Log.d("RespuestaLogin", response.toString());
+
+                    }
+                }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                VolleyLog.d(TAG, "ErrorPush: " + error.getMessage());
+
+                //Log.d("ErrorPush:  ",error.getMessage());
+
+
+
+              //  Toast.makeText(context,"Nombre de Usuario o contraseña inválidos",  Toast.LENGTH_LONG).show();
+
+
+
+
+            }
+        }) {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Authorization", "key=AAAAiu3tEDw:APA91bHfrJugjdPaxv1xoYgMLhZYuLaQPzpK7tE1rnzFANMPPnc8YMGtI01mJwzQAfkne-bw_ofLyyzXT0kGgVI-2eg6j9WbfuvzBCc379_NqjDZfncE3N3M5V_WLGZdvUZpJBHAbjrO");
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+        };
+
+        jsonObjReq.setTag(TAG);
+        queue.add(jsonObjReq);
+
+
+    }
+
+    private void obtenerToken(String cedula){
+
+
+
+
+        db.collection("Usuario").document(cedula).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                        if(documentSnapshot.exists()){
+
+                            //Map<String,Object> usuario=documentSnapshot.getData();
+
+                            String token_firebase=documentSnapshot.getString(KEY_TOKEN);
+
+                            enviarPush(token_firebase);
+
+
+
+                        }
+                        else{
+
+                            //Toast.makeText(LoginActivity.this,"No existe un usuario con la cédula ingresada.",Toast.LENGTH_LONG).show();
+
+
+                        }
+
+
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(MainActivity.this,"Error: Verifique su conexión a Internet",Toast.LENGTH_LONG).show();
+                        Log.d(TAG,e.toString());
                     }
                 });
 
