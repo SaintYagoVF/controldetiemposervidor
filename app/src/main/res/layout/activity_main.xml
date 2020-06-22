@@ -5,20 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
 
-    android:background="@color/fondo"
+    android:background="@color/white"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/Titulo2"
+    <ImageView
+        android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="15dp"
-        android:text="CONTROL DE TIEMPO"
-        android:textAlignment="center"
-        android:textColor="@color/colorPrimary"
-        android:textSize="30sp" />
+        android:src="@drawable/dilipa_tablet" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -47,6 +42,32 @@
             android:layout_weight="0.5"
             android:orientation="vertical">
 
+
+            <TextView
+                android:id="@+id/TituloContenido"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="15dp"
+                android:text=""
+                android:textAlignment="center"
+                android:inputType="textMultiLine"
+                android:textColor="@color/negro"
+
+                android:textSize="20sp" />
+
+            <!--TextView
+                android:id="@+id/TituloCodigo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="15dp"
+                android:textAlignment="center"
+                android:textColor="@color/negro"
+                android:inputType="textMultiLine"
+                android:text="BIENVENIDO/A"
+                android:textSize="20sp" /-->
+
             <TextView
                 android:id="@+id/TituloNombre"
                 android:layout_width="match_parent"
@@ -54,30 +75,25 @@
                 android:layout_gravity="center"
                 android:layout_margin="15dp"
                 android:textAlignment="center"
-                android:textColor="@color/colorPrimary"
+                android:textColor="@color/negro"
                 android:inputType="textMultiLine"
-                android:text=""
-                android:textSize="30sp" />
+                android:text="Por favor, acerque el código QR a la cámara de la Tablet."
+                android:textSize="20sp" />
 
-            <TextView
-                android:id="@+id/TituloContenido"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+            <ImageView
+                android:id="@+id/imageViewOK"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:layout_gravity="center"
-                android:layout_margin="12dp"
-                android:text="BIENVENIDO/A"
-                android:textAlignment="center"
-                android:inputType="textMultiLine"
-                android:textColor="@color/colorPrimary"
+                android:src="@drawable/successful"
+                android:visibility="invisible" />
 
-                android:textSize="30sp" />
-
-            <ProgressBar
+            <!--ProgressBar
                 android:id="@+id/progressBar"
                 style="?android:attr/progressBarStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="invisible"/>
+                android:visibility="invisible"/-->
 
             <TextClock
                 android:id="@+id/textClock1"
@@ -86,13 +102,12 @@
                 android:layout_gravity="center"
                 android:format24Hour="hh:mm:ss a"
                 android:gravity="center"
-                android:textColor="@color/colorPrimary"
-                android:textSize="45dp"
+                android:textColor="@color/negro"
+                android:textSize="25dp"
 
                 android:textStyle="bold" />
 
         </LinearLayout>
     </LinearLayout>
-
 
 </LinearLayout>

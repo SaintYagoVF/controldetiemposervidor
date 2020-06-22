@@ -4,12 +4,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -32,6 +35,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.SetOptions;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.ResultPoint;
@@ -47,7 +51,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,17 +68,26 @@ public class MainActivity extends Activity {
     private DecoratedBarcodeView barcodeView;
     private BeepManager beepManager;
     private String lastText;
-    private ProgressBar progressBar;
+    //private ProgressBar progressBar;
+
+    private static final int MY_CAMERA_REQUEST_CODE = 100;
 
 
     private TextView txtTituloNombre, txtTituloContenido;
+    //private TextView txtTituloCodigo;
+
+    private ImageView imgOk;
 
     //FIRESTORE
+
     private static final String TAG="MainActivity";
     private static final String KEY_OTP="otp";
     private static final String KEY_LOGIN="login";
     private static final String KEY_NOMBRE="nombre";
     private static final String KEY_TOKEN="token";
+    private static final String KEY_CEDULA="cedula";
+    private static final String KEY_FECHA="fecha";
+
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private BarcodeCallback callback = new BarcodeCallback() {
@@ -118,15 +133,18 @@ public class MainActivity extends Activity {
                 cedulaQR= stringQR[0];
                 valorTiempoQR=Long.parseLong(stringQR[1]);
 
-                if(valorTiempoActual>=valorTiempoQR-15000 && valorTiempoActual<=valorTiempoQR+15000){
+               /* if(valorTiempoActual>=valorTiempoQR-15000 && valorTiempoActual<=valorTiempoQR+15000){
 
-                    buscarFirebase(cedulaQR);
-                   barcodeView.setStatusText("¡QR válido!");
+                    //buscarFirebase(cedulaQR);
+                    buscarFirebaseModificado(cedulaQR);
+                   barcodeView.setStatusText("Espere...");
                 }else {
 
                     barcodeView.setStatusText("¡El código QR ha expirado!");
 
-                }
+                }*/
+                buscarFirebaseModificado(cedulaQR);
+                barcodeView.setStatusText("Espere...");
             }
 
         }
@@ -144,7 +162,11 @@ public class MainActivity extends Activity {
 
         txtTituloNombre=(TextView)findViewById(R.id.TituloNombre);
         txtTituloContenido=(TextView)findViewById(R.id.TituloContenido);
-        progressBar=(ProgressBar)findViewById(R.id.progressBar);
+        //txtTituloCodigo=(TextView)findViewById(R.id.TituloCodigo);
+
+        //progressBar=(ProgressBar)findViewById(R.id.progressBar);
+
+        imgOk=(ImageView)findViewById(R.id.imageViewOK);
 
         barcodeView = findViewById(R.id.zxing_barcode_scanner);
         Collection<BarcodeFormat> formats = Arrays.asList(BarcodeFormat.QR_CODE, BarcodeFormat.CODE_39);
@@ -155,6 +177,39 @@ public class MainActivity extends Activity {
         beepManager = new BeepManager(this);
 
         barcodeView.setStatusText("Ubique el código QR de su App celular.");
+
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setPersistenceEnabled(false)
+                .build();
+        db.setFirestoreSettings(settings);
+
+        //Permisos cámara
+
+        try {
+
+
+            if (android.os.Build.VERSION.SDK_INT >= 23) {
+                if (checkSelfPermission(Manifest.permission.CAMERA)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[]{Manifest.permission.CAMERA},
+                            MY_CAMERA_REQUEST_CODE);
+                } else {
+                    Log.d("Permiso_camara:"," permiso otorgado");
+
+                }
+
+
+            } else {
+
+
+                Log.d("Permiso_camara:"," versión inferior");
+
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -203,7 +258,7 @@ public class MainActivity extends Activity {
 
                         if(documentSnapshot.exists()){
 
-                            progressBar.setVisibility(View.VISIBLE);
+                            //progressBar.setVisibility(View.VISIBLE);
 
                             //Map<String,Object> usuario=documentSnapshot.getData();
 
@@ -213,8 +268,9 @@ public class MainActivity extends Activity {
 
                             String randomFinal=String.format("%04d", random);
 
-                            txtTituloNombre.setText("BIENVENIDO/A ¡"+nombre_firebase+"!");
-                            txtTituloContenido.setText("Por favor, ingresa el siguiente código en tu App: "+randomFinal);
+                            txtTituloNombre.setText(nombre_firebase);
+                            txtTituloContenido.setText("Por favor, ingresa el siguiente código en tu App: ");
+                            //txtTituloCodigo.setText(randomFinal);
 
                             obtenerToken(cedula);
 
@@ -245,10 +301,11 @@ public class MainActivity extends Activity {
 
                                                         if(snapshot.getData().containsValue(true)){
                                                             Toast.makeText(MainActivity.this,"¡ASISTENCIA REGISTRADA!",Toast.LENGTH_LONG).show();
-                                                            progressBar.setVisibility(View.INVISIBLE);
+                                                            //progressBar.setVisibility(View.INVISIBLE);
                                                             barcodeView.setStatusText("Ubique el código QR de su App celular.");
                                                             txtTituloNombre.setText("");
-                                                            txtTituloContenido.setText("BIENVENIDO/A");
+                                                            txtTituloContenido.setText("");
+                                                            //txtTituloCodigo.setText("BIENVENIDO/A");
                                                             return;
                                                         }
 
@@ -295,6 +352,115 @@ public class MainActivity extends Activity {
                         Toast.makeText(MainActivity.this,"Error: Verifique su conexión a Internet",Toast.LENGTH_LONG).show();
                         Log.d(TAG,e.toString());
                        // hideDialog();
+                    }
+                });
+
+    }
+
+
+
+
+    private void buscarFirebaseModificado(String cedulaQR){
+
+
+        String cedula=cedulaQR;
+
+        db=FirebaseFirestore.getInstance();
+
+
+        db.collection("Usuario").document(cedula).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                        if(documentSnapshot.exists()){
+
+                            //progressBar.setVisibility(View.VISIBLE);
+
+                            //Map<String,Object> usuario=documentSnapshot.getData();
+
+                            String nombre_firebase=documentSnapshot.getString(KEY_NOMBRE);
+
+
+
+
+                            txtTituloContenido.setText("¡BIENVENIDO/A!");
+                            txtTituloNombre.setText(nombre_firebase);
+                            //txtTituloContenido.setText(nombre_firebase);
+                            //txtTituloCodigo.setText(randomFinal);
+                            imgOk.setImageResource(R.drawable.successful);
+                            imgOk.setVisibility(View.VISIBLE);
+                            registroAsistencia(cedula);
+
+                            Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                public void run() {
+                                    imgOk.setVisibility(View.INVISIBLE);
+                                    txtTituloContenido.setText("");
+                                    txtTituloNombre.setText("Por favor, acerque el código QR a la cámara de la Tablet.");
+                                    barcodeView.setStatusText("Ubique el código QR de su App celular.");
+                                }
+                            }, 2500);   //5 seconds
+
+
+
+
+
+
+                        }else{
+                            //Toast.makeText(MainActivity.this,"Error. No existe un usuario con la cédula ingresada.",Toast.LENGTH_LONG).show();
+                            //hideDialog();
+
+                            txtTituloNombre.setText("Error. No existe un usuario con la cédula ingresada en la App.");
+                            //txtTituloContenido.setText("¡BIENVENIDO/A!");
+                            //txtTituloCodigo.setText(randomFinal);
+                            txtTituloContenido.setText("");
+                            imgOk.setImageResource(R.drawable.error);
+                            imgOk.setVisibility(View.VISIBLE);
+
+                            Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                public void run() {
+                                    imgOk.setVisibility(View.INVISIBLE);
+                                    txtTituloContenido.setText("");
+                                    txtTituloNombre.setText("Por favor, acerque el código QR a la cámara de la Tablet.");
+                                    barcodeView.setStatusText("Ubique el código QR de su App celular.");
+                                }
+                            }, 2500);   //5 seconds
+                        }
+
+
+
+
+
+                    }
+
+
+
+
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        //Toast.makeText(MainActivity.this,"Error: Verifique su conexión a Internet",Toast.LENGTH_LONG).show();
+                        Log.d(TAG,e.toString());
+                        // hideDialog();
+                        txtTituloNombre.setText("Error. Verifique su conexión a Internet");
+                        //txtTituloContenido.setText(nombre_firebase);
+                        txtTituloContenido.setText("");
+                        //txtTituloCodigo.setText(randomFinal);
+                        imgOk.setImageResource(R.drawable.error);
+                        imgOk.setVisibility(View.VISIBLE);
+
+                        Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            public void run() {
+                                imgOk.setVisibility(View.INVISIBLE);
+                                txtTituloContenido.setText("");
+                                txtTituloNombre.setText("Por favor, acerque el código QR a la cámara de la Tablet.");
+                                barcodeView.setStatusText("Ubique el código QR de su App celular.");
+                            }
+                        }, 2500);   //5 seconds
                     }
                 });
 
@@ -418,6 +584,62 @@ public class MainActivity extends Activity {
                     public void onFailure(@NonNull Exception e) {
                         Toast.makeText(MainActivity.this,"Error: Verifique su conexión a Internet",Toast.LENGTH_LONG).show();
                         Log.d(TAG,e.toString());
+                    }
+                });
+
+    }
+
+    private void registroAsistencia(String cedula){
+
+        Date currentTime = Calendar.getInstance().getTime();
+        Long time= System.currentTimeMillis();
+
+        String idRegistro=time.toString();
+
+        final  Map<String,Object> usuario=new HashMap<>();
+
+
+
+        usuario.put(KEY_CEDULA,cedula);
+        usuario.put(KEY_FECHA,currentTime);
+
+
+
+
+
+        db.collection("Registro").document(idRegistro).set(usuario)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                       // Toast.makeText(MainActivity.this,"¡Asistencia Registrada!: ",Toast.LENGTH_LONG).show();
+
+
+
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+
+                        //Toast.makeText(MainActivity.this,"Error al registrar asistencia",Toast.LENGTH_LONG).show();
+                        //Log.d(TAG,e.toString());
+                        txtTituloNombre.setText("Error. Verifique su conexión a Internet");
+                        txtTituloContenido.setText("");
+                        //txtTituloContenido.setText(nombre_firebase);
+                        //txtTituloCodigo.setText(randomFinal);
+                        imgOk.setImageResource(R.drawable.error);
+                        imgOk.setVisibility(View.VISIBLE);
+
+                        Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            public void run() {
+                                imgOk.setVisibility(View.INVISIBLE);
+                                txtTituloContenido.setText("");
+                                txtTituloNombre.setText("Por favor, acerque el código QR a la cámara de la Tablet.");
+                                barcodeView.setStatusText("Ubique el código QR de su App celular.");
+                            }
+                        }, 2500);   //5 seconds
+
                     }
                 });
 

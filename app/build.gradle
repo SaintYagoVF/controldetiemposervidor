@@ -7,12 +7,43 @@ android {
 
     defaultConfig {
         applicationId "com.example.controldetiemposervidor"
-        minSdkVersion 24
+        minSdkVersion 17
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+    }
+
+    def validConfig
+    def keystoreFile
+    def keystorePassword
+    def keystoreAlias
+
+    try {
+        Properties properties = new Properties()
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+        keystoreFile = properties.getProperty('keystore.file')
+        keystorePassword = properties.getProperty('keystore.password')
+        keystoreAlias = properties.getProperty('keystore.alias')
+        validConfig = keystoreFile != null && keystorePassword != null && keystoreAlias != null
+    } catch (error) {
+        validConfig = false
+    }
+
+    if (validConfig) {
+        System.out.println("Release signing configured with " + keystoreFile)
+        signingConfigs {
+            release {
+                storeFile project.rootProject.file(keystoreFile)
+                storePassword keystorePassword
+                keyAlias keystoreAlias
+                keyPassword keystorePassword
+            }
+        }
+    } else {
+        System.out.println("Specify keystore.file, keystore.alias and keystore.password in local.properties to enable release signing.")
     }
 
     buildTypes {
@@ -50,4 +81,16 @@ dependencies {
 
     //Volley
     implementation 'com.android.volley:volley:1.1.1'
+
+
+    // leakcanary is for development purposes only
+    // https://github.com/square/leakcanary
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5'
+    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
+
+    // AboutLibraries
+    implementation "com.mikepenz:aboutlibraries:6.2.3"
+}
+android {
+    buildToolsVersion '28.0.3'
 }
